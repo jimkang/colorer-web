@@ -116,9 +116,3 @@ button {
     font-size: 18px;
   }
 }
-
-
-#canvas-container > canvas {
-  float: left;
-  max-width: 45%;
-}

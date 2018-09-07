@@ -30,7 +30,12 @@ function scaleDownImage(img, scale) {
   ctx.drawImage(img, 0, 0, smallWidth, smallHeight);
   // Now we are in smallville.
   var imageData = ctx.getImageData(0, 0, smallWidth, smallHeight);
-  recolor({ srcDataArray: Array.from(imageData.data), smallWidth, smallHeight, scale: originalWidth/smallWidth });
+  recolor({
+    srcDataArray: Array.from(imageData.data),
+    smallWidth,
+    smallHeight,
+    scale: originalWidth/smallWidth
+  });
 }
 
 function recolor({ srcDataArray, scale = 1.0, smallWidth, smallHeight }) {
@@ -48,16 +53,13 @@ function recolor({ srcDataArray, scale = 1.0, smallWidth, smallHeight }) {
       replacement = rgbaToString([probable.roll(256), probable.roll(256), probable.roll(256), 255]);
       newForOld[originalString] = replacement;
     }
-    replacement = originalString;
+    // replacement = originalString;
 
     let pixelIdx = i / 4;
     let srcRow = ~~(pixelIdx / smallWidth);
     let srcCol = pixelIdx % smallWidth;
     let destX = (srcCol * scale);
     let destY = (srcRow * scale);
-    if (pixelIdx < 100) {
-      console.log(JSON.stringify({srcCol, srcRow, destX, destY, scale}));
-    }
 
     targetCtx.fillStyle = replacement;
     targetCtx.fillRect(destX, destY, scale, scale);
