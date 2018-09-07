@@ -117,3 +117,8 @@ button {
   }
 }
 
+
+#canvas-container > canvas {
+  float: left;
+  max-width: 45%;
+}

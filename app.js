@@ -10,26 +10,26 @@ var originalWidth;
 
 function loadSourceImage() {
   var img = new Image();
-  img.addEventListener('load', drawSrcImage);
+  img.addEventListener('load', doTransform);
   img.src = 'data/fish.jpg';
   
-  function drawSrcImage() {
-    var srcCanvas = document.getElementById('source-canvas');
-    originalWidth = img.width;
-    srcCanvas.width = img.width;
-    srcCanvas.height = img.height;
-    var ctx = srcCanvas.getContext('2d');
-    scaleDownImage(ctx, img, 1/32);
+  function doTransform() {
+    const srcScale = .5;
+    scaleDownImage(img, srcScale);
   }
 }
 
-function scaleDownImage(ctx, img, scale) {
-  var smallWidth = img.width * scale;
-  var smallHeight = img.height * scale;
+function scaleDownImage(img, scale) {
+  var srcCanvas = document.getElementById('source-canvas');
+  originalWidth = img.width;
+  var ctx = srcCanvas.getContext('2d');
+  var smallWidth = ~~(img.width * scale);
+  var smallHeight = ~~(img.height * scale);
+  srcCanvas.width = smallWidth;
+  srcCanvas.height = smallHeight;
   ctx.drawImage(img, 0, 0, smallWidth, smallHeight);
-
+  // Now we are in smallville.
   var imageData = ctx.getImageData(0, 0, smallWidth, smallHeight);
-  console.log(imageData.data);
   recolor({ srcDataArray: Array.from(imageData.data), smallWidth, smallHeight, scale: originalWidth/smallWidth });
 }
 
@@ -48,14 +48,16 @@ function recolor({ srcDataArray, scale = 1.0, smallWidth, smallHeight }) {
       replacement = rgbaToString([probable.roll(256), probable.roll(256), probable.roll(256), 255]);
       newForOld[originalString] = replacement;
     }
-    // replacement = originalString;
+    replacement = originalString;
 
-    let srcY = ~~(i/4/smallWidth);
-    let srcX = ~~(i/4) % smallWidth;
-    let destX = ~~(srcX * scale);
-    let destY = ~~(srcY * scale);
-    // console.log('src', srcX, srcY);
-    // console.log('dest', destX, destY);
+    let pixelIdx = i / 4;
+    let srcRow = ~~(pixelIdx / smallWidth);
+    let srcCol = pixelIdx % smallWidth;
+    let destX = (srcCol * scale);
+    let destY = (srcRow * scale);
+    if (pixelIdx < 100) {
+      console.log(JSON.stringify({srcCol, srcRow, destX, destY, scale}));
+    }
 
     targetCtx.fillStyle = replacement;
     targetCtx.fillRect(destX, destY, scale, scale);
@@ -66,7 +68,6 @@ function recolor({ srcDataArray, scale = 1.0, smallWidth, smallHeight }) {
 }
 
 function rgbaToString(rgbaArray) {
-  console.log('array', rgbaArray);
   return `rgba(${rgbaArray.slice(0, 3).map(roundColorRawValue).join(', ')}, ${rgbaArray[3]/255})`;
 }
 
