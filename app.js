@@ -5,19 +5,19 @@ var qs = require('qs');
 var originalWidth;
 
 class ColorerApp {
-  constructor ({quant = 16, srcImgUrl = 'data/fish.jpg'}) {
+  constructor({ quant = 16, srcImgUrl = 'data/fish.jpg' }) {
     this.quantizationFactor = quant;
     this.srcImgUrl = srcImgUrl;
   }
 
-  loadSourceImage () {
+  loadSourceImage() {
     var img = new Image();
     img.crossOrigin = 'Anonymous';
     img.addEventListener('load', doTransform.bind(this));
     img.src = this.srcImgUrl;
 
     function doTransform() {
-      const srcScale = .5;
+      const srcScale = 0.5;
       this.scaleDownImage(img, srcScale);
     }
   }
@@ -37,7 +37,7 @@ class ColorerApp {
       srcDataArray: Array.from(imageData.data),
       smallWidth,
       smallHeight,
-      scale: originalWidth/smallWidth
+      scale: originalWidth / smallWidth
     });
   }
 
@@ -53,7 +53,12 @@ class ColorerApp {
       let originalString = this.rgbaToString(rgbaArray);
       let replacement = newForOld[originalString];
       if (!replacement) {
-        replacement = this.rgbaToString([probable.roll(256), probable.roll(256), probable.roll(256), 255]);
+        replacement = this.rgbaToString([
+          probable.roll(256),
+          probable.roll(256),
+          probable.roll(256),
+          255
+        ]);
         newForOld[originalString] = replacement;
       }
       // replacement = originalString;
@@ -61,8 +66,8 @@ class ColorerApp {
       let pixelIdx = i / 4;
       let srcRow = ~~(pixelIdx / smallWidth);
       let srcCol = pixelIdx % smallWidth;
-      let destX = (srcCol * scale);
-      let destY = (srcRow * scale);
+      let destX = srcCol * scale;
+      let destY = srcRow * scale;
 
       targetCtx.fillStyle = replacement;
       targetCtx.fillRect(destX, destY, scale, scale);
@@ -73,11 +78,14 @@ class ColorerApp {
   }
 
   rgbaToString(rgbaArray) {
-    return `rgba(${rgbaArray.slice(0, 3).map(this.roundColorRawValue.bind(this)).join(', ')}, ${rgbaArray[3]/255})`;
+    return `rgba(${rgbaArray
+      .slice(0, 3)
+      .map(this.roundColorRawValue.bind(this))
+      .join(', ')}, ${rgbaArray[3] / 255})`;
   }
 
   roundColorRawValue(v) {
-    return ~~( v / this.quantizationFactor) * this.quantizationFactor;
+    return ~~(v / this.quantizationFactor) * this.quantizationFactor;
   }
 }
 
@@ -88,8 +96,6 @@ class ColorerApp {
   app.loadSourceImage();
 })();
 
-
 function reportTopLevelError(msg, url, lineNo, columnNo, error) {
   handleError(error);
 }
-
