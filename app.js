@@ -12,6 +12,7 @@ class ColorerApp {
 
   loadSourceImage () {
     var img = new Image();
+    img.crossOrigin = 'Anonymous';
     img.addEventListener('load', doTransform.bind(this));
     img.src = this.srcImgUrl;
 
