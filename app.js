@@ -1,13 +1,21 @@
 var handleError = require('handle-error-web');
 var probable = require('probable');
 var qs = require('qs');
+var hsl = require('d3-color').hsl;
 
 var originalWidth;
 
 class ColorerApp {
-  constructor({ quant = 16, srcImgUrl = 'data/fish.jpg' }) {
+  constructor({
+    quant = 16,
+    grayscale = false,
+    srcImgUrl = 'data/fish.jpg',
+    recolorMode = 'random'
+  }) {
     this.quantizationFactor = quant;
     this.srcImgUrl = srcImgUrl;
+    this.grayscale = grayscale;
+    this.recolorMode = recolorMode;
   }
 
   loadSourceImage() {
@@ -30,7 +38,11 @@ class ColorerApp {
     var smallHeight = ~~(img.height * scale);
     srcCanvas.width = smallWidth;
     srcCanvas.height = smallHeight;
+    if (this.grayscale) {
+      ctx.filter = 'saturate(0%)';
+    }
     ctx.drawImage(img, 0, 0, smallWidth, smallHeight);
+    ctx.filter = 'none';
     // Now we are in smallville.
     var imageData = ctx.getImageData(0, 0, smallWidth, smallHeight);
     this.recolor({
@@ -53,12 +65,18 @@ class ColorerApp {
       let originalString = this.rgbaToString(rgbaArray);
       let replacement = newForOld[originalString];
       if (!replacement) {
-        replacement = this.rgbaToString([
-          probable.roll(256),
-          probable.roll(256),
-          probable.roll(256),
-          255
-        ]);
+        if (this.recolorMode === 'random') {
+          replacement = this.rgbaToString([
+            probable.roll(256),
+            probable.roll(256),
+            probable.roll(256),
+            255
+          ]);
+        } else if (this.recolorMode === 'shiftHue') {
+          let color = hsl(originalString);
+          color.h = probable.roll(360);
+          replacement = color.toString();
+        }
         newForOld[originalString] = replacement;
       }
       // replacement = originalString;
