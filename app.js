@@ -20,7 +20,7 @@ function followRoute({
   srcImgUrl = 'data/fish.jpg',
   renderer = 'replacer',
   quant = 16,
-  grayscale = false,
+  grayscale = 'yes',
   recolorMode = 'random'
 }) {
   loadSourceImage();
@@ -33,7 +33,12 @@ function followRoute({
   }
 
   function useImage(e) {
-    var rendererOpts = { img: e.currentTarget, quant, grayscale, recolorMode };
+    var rendererOpts = {
+      img: e.currentTarget,
+      quant,
+      grayscale: grayscale === 'yes',
+      recolorMode
+    };
     var theRenderer = new renderers[renderer](rendererOpts);
     theRenderer.start();
   }
