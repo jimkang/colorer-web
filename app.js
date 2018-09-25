@@ -21,8 +21,10 @@ function followRoute({
   renderer = 'replacer',
   quant = 16,
   grayscale = 'yes',
-  recolorMode = 'random'
+  recolorMode = 'random',
+  displaySrcImage = 'yes'
 }) {
+  hideOrShowSrcImage(displaySrcImage === 'yes');
   loadSourceImage();
 
   function loadSourceImage() {
@@ -46,4 +48,9 @@ function followRoute({
 
 function reportTopLevelError(msg, url, lineNo, columnNo, error) {
   handleError(error);
+}
+
+function hideOrShowSrcImage(shouldShow) {
+  var action = shouldShow ? 'remove' : 'add';
+  document.getElementById('source-canvas').classList[action]('hidden');
 }
