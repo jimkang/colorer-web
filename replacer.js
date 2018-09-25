@@ -4,7 +4,7 @@ var hsl = require('d3-color').hsl;
 var originalWidth;
 
 class Replacer {
-  constructor({ img, quant = 16, grayscale = false, recolorMode = 'random' }) {
+  constructor({ img, quant, grayscale, recolorMode }) {
     this.quantizationFactor = quant;
     this.grayscale = grayscale;
     this.recolorMode = recolorMode;
