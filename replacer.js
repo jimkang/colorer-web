@@ -4,11 +4,12 @@ var hsl = require('d3-color').hsl;
 var originalWidth;
 
 class Replacer {
-  constructor({ img, quant, grayscale, recolorMode }) {
+  constructor({ img, quant, grayscale, recolorMode, targetCanvas }) {
     this.quantizationFactor = quant;
     this.grayscale = grayscale;
     this.recolorMode = recolorMode;
     this.img = img;
+    this.targetCanvas = targetCanvas;
   }
 
   start() {
@@ -41,7 +42,7 @@ class Replacer {
   }
 
   recolor({ srcDataArray, scale = 1.0, smallWidth, smallHeight }) {
-    var targetCanvas = document.getElementById('target-canvas');
+    var targetCanvas = this.targetCanvas;
     targetCanvas.width = smallWidth * scale;
     targetCanvas.height = smallHeight * scale;
     var targetCtx = targetCanvas.getContext('2d');

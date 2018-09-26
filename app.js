@@ -11,6 +11,8 @@ var renderers = {
   linefiller: require('./linefiller')
 };
 
+var targetContainer = document.getElementById('target-canvases-container');
+
 (function go() {
   window.onerror = reportTopLevelError;
   routeState.routeFromHash();
@@ -18,12 +20,20 @@ var renderers = {
 
 function followRoute({
   srcImgUrl = 'data/fish.jpg',
-  renderer = 'replacer',
+  displaySrcImage = 'yes',
   quant = 16,
   grayscale = 'yes',
   recolorMode = 'random',
-  displaySrcImage = 'yes'
+  renderer = 'replacer',
+  runs
+  // Example url that uses runs: http://localhost:9966/#runs=[{"renderer"%3A "replacer"%2C "quant"%3A 16%2C "grayscale"%3A true%3C "recolorMode"%3A "random"}%2C{"renderer"%3A "replacer"%2C "quant"%3A 128%2C "grayscale"%3A true%2C "recolorMode"%3A "random"}]
 }) {
+  var optsForEachRun;
+  if (runs) {
+    optsForEachRun = JSON.parse(decodeURIComponent(runs));
+  } else {
+    optsForEachRun = [{ quant, grayscale, recolorMode, renderer }];
+  }
   hideOrShowSrcImage(displaySrcImage === 'yes');
   loadSourceImage();
 
@@ -35,14 +45,23 @@ function followRoute({
   }
 
   function useImage(e) {
-    var rendererOpts = {
-      img: e.currentTarget,
-      quant,
-      grayscale: grayscale === 'yes',
-      recolorMode
-    };
-    var theRenderer = new renderers[renderer](rendererOpts);
-    theRenderer.start();
+    targetContainer.innerHTML = '';
+    optsForEachRun.forEach(renderRun);
+
+    function renderRun({ renderer, quant, grayscale, recolorMode }, i) {
+      var targetCanvas = document.createElement('canvas');
+      targetCanvas.setAttribute('id', 'target-canvas-' + i);
+      targetContainer.appendChild(targetCanvas);
+      var rendererOpts = {
+        img: e.currentTarget,
+        quant,
+        grayscale: grayscale === 'yes',
+        recolorMode,
+        targetCanvas
+      };
+      var theRenderer = new renderers[renderer](rendererOpts);
+      theRenderer.start();
+    }
   }
 }
 
