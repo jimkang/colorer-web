@@ -4,12 +4,13 @@ var hsl = require('d3-color').hsl;
 var originalWidth;
 
 class Replacer {
-  constructor({ img, quant, grayscale, recolorMode, targetCanvas }) {
+  constructor({ img, quant, grayscale, recolorMode, targetCanvas, showBase }) {
     this.quantizationFactor = quant;
     this.grayscale = grayscale;
     this.recolorMode = recolorMode;
     this.img = img;
     this.targetCanvas = targetCanvas;
+    this.showBase = showBase;
   }
 
   start() {
@@ -37,15 +38,31 @@ class Replacer {
       srcDataArray: Array.from(imageData.data),
       smallWidth,
       smallHeight,
-      scale: originalWidth / smallWidth
+      scale: originalWidth / smallWidth,
+      showBase: this.showBase
     });
   }
 
-  recolor({ srcDataArray, scale = 1.0, smallWidth, smallHeight }) {
+  recolor({
+    srcDataArray,
+    scale = 1.0,
+    smallWidth,
+    smallHeight,
+    showBase = false
+  }) {
     var targetCanvas = this.targetCanvas;
     targetCanvas.width = smallWidth * scale;
     targetCanvas.height = smallHeight * scale;
     var targetCtx = targetCanvas.getContext('2d');
+
+    if (showBase) {
+      targetCtx.filter = 'saturate(0%)';
+      targetCtx.drawImage(this.img, 0, 0);
+
+      targetCtx.filter = 'none';
+      targetCtx.globalAlpha = 0.7;
+    }
+
     var newForOld = {};
 
     for (var i = 0; i < srcDataArray.length; i += 4) {
