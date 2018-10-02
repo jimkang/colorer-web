@@ -12,8 +12,8 @@ class Replacer {
     this.targetCanvas = routeOpts.targetCanvas;
     this.showBase = routeOpts.showBase;
     this.opacityPercentOverBase = routeOpts.opacityPercentOverBase;
-    this.numberOfRetriesToAvoidSingleColor =
-      routeOpts.numberOfRetriesToAvoidSingleColor;
+    this.numberOfRetriesToAvoidSingleColor = +routeOpts.numberOfRetriesToAvoidSingleColor;
+    this.minimumValueDifference = +routeOpts.minimumValueDifference;
   }
 
   start() {
@@ -70,7 +70,17 @@ class Replacer {
       );
       console.log('replacementColors', replacementColors);
       if (replacementColors.length > 1) {
-        break;
+        if (this.minimumValueDifference <= 0) {
+          break;
+        }
+        if (
+          colorsHaveAValueDiffOverMin(
+            replacementColors,
+            this.minimumValueDifference
+          )
+        ) {
+          break;
+        }
       }
     }
 
@@ -124,6 +134,25 @@ class Replacer {
   roundColorRawValue(v) {
     return ~~(v / this.quantizationFactor) * this.quantizationFactor;
   }
+}
+
+function colorsHaveAValueDiffOverMin(colors, min) {
+  var values = colors.map(getColorValue);
+  for (var i = 0; i < values.length; ++i) {
+    for (let j = i; j < values.length; ++j) {
+      let diff = Math.abs(values[i] - values[j]);
+      console.log('diff', diff);
+      if (diff >= min) {
+        return true;
+      }
+    }
+  }
+  return false;
+}
+
+function getColorValue(colorString) {
+  var color = hsl(colorString);
+  return color.l;
 }
 
 module.exports = Replacer;

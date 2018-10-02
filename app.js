@@ -10,7 +10,9 @@ var routeDefaults = {
   renderer: 'replacer',
   showBase: 'no',
   opacityPercentOverBase: 50,
-  numberOfRetriesToAvoidSingleColor: 5
+  numberOfRetriesToAvoidSingleColor: 5,
+  // The required minimum value between at least two of the colors.
+  minimumValueDifference: 0
 };
 
 var routeState = RouteState({
