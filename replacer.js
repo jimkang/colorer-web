@@ -4,13 +4,22 @@ var hsl = require('d3-color').hsl;
 var originalWidth;
 
 class Replacer {
-  constructor({ img, quant, grayscale, recolorMode, targetCanvas, showBase }) {
+  constructor({
+    img,
+    quant,
+    grayscale,
+    recolorMode,
+    targetCanvas,
+    showBase,
+    opacityPercentOverBase
+  }) {
     this.quantizationFactor = quant;
     this.grayscale = grayscale;
     this.recolorMode = recolorMode;
     this.img = img;
     this.targetCanvas = targetCanvas;
     this.showBase = showBase;
+    this.opacityPercentOverBase = opacityPercentOverBase;
   }
 
   start() {
@@ -39,7 +48,8 @@ class Replacer {
       smallWidth,
       smallHeight,
       scale: originalWidth / smallWidth,
-      showBase: this.showBase
+      showBase: this.showBase,
+      opacityPercentOverBase: this.opacityPercentOverBase
     });
   }
 
@@ -48,7 +58,8 @@ class Replacer {
     scale = 1.0,
     smallWidth,
     smallHeight,
-    showBase = false
+    showBase = false,
+    opacityPercentOverBase = 50
   }) {
     var targetCanvas = this.targetCanvas;
     targetCanvas.width = smallWidth * scale;
@@ -60,7 +71,7 @@ class Replacer {
       targetCtx.drawImage(this.img, 0, 0);
 
       targetCtx.filter = 'none';
-      targetCtx.globalAlpha = 0.7;
+      targetCtx.globalAlpha = opacityPercentOverBase / 100;
     }
 
     var newForOld = {};

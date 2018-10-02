@@ -26,6 +26,7 @@ function followRoute({
   recolorMode = 'random',
   renderer = 'replacer',
   showBase = 'no',
+  opacityPercentOverBase = 50,
   runs
   // Example url that uses runs: http://localhost:9966/#runs=[{"renderer"%3A "replacer"%2C "quant"%3A 16%2C "grayscale"%3A true%3C "recolorMode"%3A "random"}%2C{"renderer"%3A "replacer"%2C "quant"%3A 128%2C "grayscale"%3A true%2C "recolorMode"%3A "random"}]
 }) {
@@ -33,7 +34,16 @@ function followRoute({
   if (runs) {
     optsForEachRun = JSON.parse(decodeURIComponent(runs));
   } else {
-    optsForEachRun = [{ quant, grayscale, recolorMode, renderer, showBase }];
+    optsForEachRun = [
+      {
+        quant,
+        grayscale,
+        recolorMode,
+        renderer,
+        showBase,
+        opacityPercentOverBase
+      }
+    ];
   }
   hideOrShowSrcImage(displaySrcImage === 'yes');
   loadSourceImage();
@@ -50,7 +60,14 @@ function followRoute({
     optsForEachRun.forEach(renderRun);
 
     function renderRun(
-      { renderer, quant, grayscale, recolorMode, showBase },
+      {
+        renderer,
+        quant,
+        grayscale,
+        recolorMode,
+        showBase,
+        opacityPercentOverBase
+      },
       i
     ) {
       var targetCanvas = document.createElement('canvas');
@@ -62,7 +79,8 @@ function followRoute({
         grayscale: grayscale === 'yes',
         recolorMode,
         targetCanvas,
-        showBase: showBase === 'yes'
+        showBase: showBase === 'yes',
+        opacityPercentOverBase: +opacityPercentOverBase
       };
       var theRenderer = new renderers[renderer](rendererOpts);
       theRenderer.start();
