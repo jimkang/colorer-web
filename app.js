@@ -1,6 +1,17 @@
 var handleError = require('handle-error-web');
 var RouteState = require('route-state');
 
+var routeDefaults = {
+  srcImgUrl: 'data/fish.jpg',
+  displaySrcImage: 'yes',
+  quant: 16,
+  grayscale: 'yes',
+  recolorMode: 'random',
+  renderer: 'replacer',
+  showBase: 'no',
+  opacityPercentOverBase: 50
+};
+
 var routeState = RouteState({
   followRoute,
   windowObject: window
@@ -18,71 +29,41 @@ var targetContainer = document.getElementById('target-canvases-container');
   routeState.routeFromHash();
 })();
 
-function followRoute({
-  srcImgUrl = 'data/fish.jpg',
-  displaySrcImage = 'yes',
-  quant = 16,
-  grayscale = 'yes',
-  recolorMode = 'random',
-  renderer = 'replacer',
-  showBase = 'no',
-  opacityPercentOverBase = 50,
-  runs
-  // Example url that uses runs: http://localhost:9966/#runs=[{"renderer"%3A "replacer"%2C "quant"%3A 16%2C "grayscale"%3A true%3C "recolorMode"%3A "random"}%2C{"renderer"%3A "replacer"%2C "quant"%3A 128%2C "grayscale"%3A true%2C "recolorMode"%3A "random"}]
-}) {
+function followRoute(routeOpts) {
+  var opts = Object.assign({}, routeDefaults, routeOpts);
   var optsForEachRun;
-  if (runs) {
-    optsForEachRun = JSON.parse(decodeURIComponent(runs));
+  if (opts.runs) {
+    // Example url that uses runs:
+    // http://localhost:9966/#runs=[{"renderer"%3A "replacer"%2C "quant"%3A 16%2C "grayscale"%3A true%2C "recolorMode"%3A "random"}%2C{"renderer"%3A "replacer"%2C "quant"%3A 128%2C "grayscale"%3A true%2C "recolorMode"%3A "random"}]
+    optsForEachRun = JSON.parse(decodeURIComponent(opts.runs));
   } else {
-    optsForEachRun = [
-      {
-        quant,
-        grayscale,
-        recolorMode,
-        renderer,
-        showBase,
-        opacityPercentOverBase
-      }
-    ];
+    optsForEachRun = [opts];
   }
-  hideOrShowSrcImage(displaySrcImage === 'yes');
+  hideOrShowSrcImage(opts.displaySrcImage === 'yes');
   loadSourceImage();
 
   function loadSourceImage() {
     var img = new Image();
     img.crossOrigin = 'Anonymous';
     img.addEventListener('load', useImage);
-    img.src = srcImgUrl;
+    img.src = opts.srcImgUrl;
   }
 
   function useImage(e) {
     targetContainer.innerHTML = '';
     optsForEachRun.forEach(renderRun);
 
-    function renderRun(
-      {
-        renderer,
-        quant,
-        grayscale,
-        recolorMode,
-        showBase,
-        opacityPercentOverBase
-      },
-      i
-    ) {
+    function renderRun(runOpts, i) {
       var targetCanvas = document.createElement('canvas');
       targetCanvas.setAttribute('id', 'target-canvas-' + i);
       targetContainer.appendChild(targetCanvas);
-      var rendererOpts = {
+      var rendererOpts = Object.assign({}, runOpts, {
         img: e.currentTarget,
-        quant,
-        grayscale: grayscale === 'yes',
-        recolorMode,
         targetCanvas,
-        showBase: showBase === 'yes',
-        opacityPercentOverBase: +opacityPercentOverBase
-      };
-      var theRenderer = new renderers[renderer](rendererOpts);
+        grayscale: runOpts.grayscale === 'yes',
+        showBase: runOpts.showBase === 'yes'
+      });
+      var theRenderer = new renderers[runOpts.renderer](rendererOpts);
       theRenderer.start();
     }
   }
