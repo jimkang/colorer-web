@@ -141,7 +141,7 @@ function colorsHaveAValueDiffOverMin(colors, min) {
   for (var i = 0; i < values.length; ++i) {
     for (let j = i; j < values.length; ++j) {
       let diff = Math.abs(values[i] - values[j]);
-      console.log('diff', diff);
+      // console.log('diff', diff);
       if (diff >= min) {
         return true;
       }
