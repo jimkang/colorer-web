@@ -4,22 +4,14 @@ var hsl = require('d3-color').hsl;
 var originalWidth;
 
 class Replacer {
-  constructor({
-    img,
-    quant,
-    grayscale,
-    recolorMode,
-    targetCanvas,
-    showBase,
-    opacityPercentOverBase
-  }) {
-    this.quantizationFactor = quant;
-    this.grayscale = grayscale;
-    this.recolorMode = recolorMode;
-    this.img = img;
-    this.targetCanvas = targetCanvas;
-    this.showBase = showBase;
-    this.opacityPercentOverBase = opacityPercentOverBase;
+  constructor(routeOpts) {
+    this.quantizationFactor = routeOpts.quant;
+    this.grayscale = routeOpts.grayscale;
+    this.recolorMode = routeOpts.recolorMode;
+    this.img = routeOpts.img;
+    this.targetCanvas = routeOpts.targetCanvas;
+    this.showBase = routeOpts.showBase;
+    this.opacityPercentOverBase = routeOpts.opacityPercentOverBase;
   }
 
   start() {
@@ -53,25 +45,18 @@ class Replacer {
     });
   }
 
-  recolor({
-    srcDataArray,
-    scale = 1.0,
-    smallWidth,
-    smallHeight,
-    showBase = false,
-    opacityPercentOverBase = 50
-  }) {
+  recolor({ srcDataArray, scale = 1.0, smallWidth, smallHeight }) {
     var targetCanvas = this.targetCanvas;
     targetCanvas.width = smallWidth * scale;
     targetCanvas.height = smallHeight * scale;
     var targetCtx = targetCanvas.getContext('2d');
 
-    if (showBase) {
+    if (this.showBase) {
       targetCtx.filter = 'saturate(0%)';
       targetCtx.drawImage(this.img, 0, 0);
 
       targetCtx.filter = 'none';
-      targetCtx.globalAlpha = opacityPercentOverBase / 100;
+      targetCtx.globalAlpha = this.opacityPercentOverBase / 100;
     }
 
     var newForOld = {};
