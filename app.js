@@ -33,12 +33,12 @@ var targetContainer = document.getElementById('target-canvases-container');
 })();
 
 function followRoute(routeOpts) {
-  var opts = Object.assign({}, routeDefaults, routeOpts);
+  var opts = setDefaults(routeOpts);
   var optsForEachRun;
   if (opts.runs) {
     // Example url that uses runs:
     // http://localhost:9966/#runs=[{"renderer"%3A "replacer"%2C "quant"%3A 16%2C "grayscale"%3A true%2C "recolorMode"%3A "random"}%2C{"renderer"%3A "replacer"%2C "quant"%3A 128%2C "grayscale"%3A true%2C "recolorMode"%3A "random"}]
-    optsForEachRun = JSON.parse(decodeURIComponent(opts.runs));
+    optsForEachRun = JSON.parse(decodeURIComponent(opts.runs)).map(setDefaults);
   } else {
     optsForEachRun = [opts];
   }
@@ -79,4 +79,8 @@ function reportTopLevelError(msg, url, lineNo, columnNo, error) {
 function hideOrShowSrcImage(shouldShow) {
   var action = shouldShow ? 'remove' : 'add';
   document.getElementById('source-canvas').classList[action]('hidden');
+}
+
+function setDefaults(opts) {
+  return Object.assign({}, routeDefaults, opts);
 }
