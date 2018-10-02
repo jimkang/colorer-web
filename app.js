@@ -9,7 +9,8 @@ var routeDefaults = {
   recolorMode: 'random',
   renderer: 'replacer',
   showBase: 'no',
-  opacityPercentOverBase: 50
+  opacityPercentOverBase: 50,
+  numberOfRetriesToAvoidSingleColor: 5
 };
 
 var routeState = RouteState({

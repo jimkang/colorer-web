@@ -12,6 +12,8 @@ class Replacer {
     this.targetCanvas = routeOpts.targetCanvas;
     this.showBase = routeOpts.showBase;
     this.opacityPercentOverBase = routeOpts.opacityPercentOverBase;
+    this.numberOfRetriesToAvoidSingleColor =
+      routeOpts.numberOfRetriesToAvoidSingleColor;
   }
 
   start() {
@@ -39,9 +41,7 @@ class Replacer {
       srcDataArray: Array.from(imageData.data),
       smallWidth,
       smallHeight,
-      scale: originalWidth / smallWidth,
-      showBase: this.showBase,
-      opacityPercentOverBase: this.opacityPercentOverBase
+      scale: originalWidth / smallWidth
     });
   }
 
@@ -59,41 +59,59 @@ class Replacer {
       targetCtx.globalAlpha = this.opacityPercentOverBase / 100;
     }
 
-    var newForOld = {};
-
-    for (var i = 0; i < srcDataArray.length; i += 4) {
-      let rgbaArray = srcDataArray.slice(i, i + 4);
-      let originalString = this.rgbaToString(rgbaArray);
-      let replacement = newForOld[originalString];
-      if (!replacement) {
-        if (this.recolorMode === 'random') {
-          replacement = this.rgbaToString([
-            probable.roll(256),
-            probable.roll(256),
-            probable.roll(256),
-            255
-          ]);
-        } else if (this.recolorMode === 'shiftHue') {
-          let color = hsl(originalString);
-          color.h = probable.roll(360);
-          replacement = color.toString();
-        }
-        newForOld[originalString] = replacement;
+    for (
+      var attempts = 0;
+      attempts < this.numberOfRetriesToAvoidSingleColor;
+      ++attempts
+    ) {
+      var replacementColors = replaceColors(
+        this.rgbaToString.bind(this),
+        this.recolorMode
+      );
+      console.log('replacementColors', replacementColors);
+      if (replacementColors.length > 1) {
+        break;
       }
-      // replacement = originalString;
-
-      let pixelIdx = i / 4;
-      let srcRow = ~~(pixelIdx / smallWidth);
-      let srcCol = pixelIdx % smallWidth;
-      let destX = srcCol * scale;
-      let destY = srcRow * scale;
-
-      targetCtx.fillStyle = replacement;
-      targetCtx.fillRect(destX, destY, scale, scale);
     }
 
-    // targetCtx.fillStyle = 'blue';
-    // targetCtx.fillRect(0, 0, 1000, 1000);
+    function replaceColors(rgbaToString, recolorMode) {
+      var newForOld = {};
+      var replacementsSet = {};
+
+      for (var i = 0; i < srcDataArray.length; i += 4) {
+        let rgbaArray = srcDataArray.slice(i, i + 4);
+        let originalString = rgbaToString(rgbaArray);
+        let replacement = newForOld[originalString];
+        if (!replacement) {
+          if (recolorMode === 'random') {
+            replacement = rgbaToString([
+              probable.roll(256),
+              probable.roll(256),
+              probable.roll(256),
+              255
+            ]);
+          } else if (recolorMode === 'shiftHue') {
+            let color = hsl(originalString);
+            color.h = probable.roll(360);
+            replacement = color.toString();
+          }
+          newForOld[originalString] = replacement;
+        }
+        // replacement = originalString;
+
+        let pixelIdx = i / 4;
+        let srcRow = ~~(pixelIdx / smallWidth);
+        let srcCol = pixelIdx % smallWidth;
+        let destX = srcCol * scale;
+        let destY = srcRow * scale;
+
+        targetCtx.fillStyle = replacement;
+        targetCtx.fillRect(destX, destY, scale, scale);
+        replacementsSet[replacement] = true;
+      }
+
+      return Object.keys(replacementsSet);
+    }
   }
 
   rgbaToString(rgbaArray) {
