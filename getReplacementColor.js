@@ -5,7 +5,7 @@ module.exports = function getReplacementColor({
   originalString,
   newForOld,
   recolorMode = 'random',
-  rgbaToString, // @TODO: untangle this later.
+  rgbaToString // @TODO: untangle this later.
 }) {
   if (recolorMode === 'none') {
     return originalString;

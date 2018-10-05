@@ -62,7 +62,7 @@ class LineFiller {
               originalString: rgbaToString(lineColorRgba),
               newForOld,
               recolorMode: this.recolorMode,
-              rgbaToString,
+              rgbaToString
             });
             targetCtx.stroke();
             // reset line.
