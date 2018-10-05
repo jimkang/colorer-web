@@ -12,7 +12,8 @@ var routeDefaults = {
   opacityPercentOverBase: 50,
   numberOfRetriesToAvoidSingleColor: 5,
   // The required minimum value between at least two of the colors.
-  minimumValueDifference: 0
+  minimumValueDifference: 0,
+  tolerance: 10, // for linefiller line breaks
 };
 
 var routeState = RouteState({

@@ -14,6 +14,7 @@ class LineFiller {
     this.opacityPercentOverBase = routeOpts.opacityPercentOverBase;
     this.numberOfRetriesToAvoidSingleColor = +routeOpts.numberOfRetriesToAvoidSingleColor;
     this.minimumValueDifference = +routeOpts.minimumValueDifference;
+    this.tolerance = +routeOpts.tolerance;
   }
 
   start() {
@@ -40,16 +41,33 @@ class LineFiller {
     const targetCtx = this.targetCanvas.getContext('2d');
     // Pick a direction: left-to-right
     for (let y = 0; y < imgData.height; y++) {
-      // if (y == 10) { return }
+      let lineStartX = 0;
+      let lineColorRgba = null;
       // Watch out! be careful about edge cases, depends on direction.
       // Literal edge cases :)
-      for (let x = 0; x < imgData.width - 1; x++) {
-        const srcRgba = this.getImgDataRgba({imgData, x, y});
-        targetCtx.strokeStyle = rgbaToString(srcRgba);
-        targetCtx.beginPath()
-        targetCtx.moveTo(x, y);
-        targetCtx.lineTo(x + 1, y);
-        targetCtx.stroke()
+      for (let x = 0; x < imgData.width; x++) {
+        const currentRgba = this.getImgDataRgba({imgData, x, y});
+        if (lineColorRgba === null) {
+          lineColorRgba = currentRgba
+        } else {
+          // distance function (value-by-avg, d3 stuff)
+          const rgbaDistance = getRgbaDistance(lineColorRgba, currentRgba)
+          const shouldDrawLine = (
+            (rgbaDistance > this.tolerance)
+            || (x === (imgData.width - 1))
+          )
+          if (shouldDrawLine) {
+            // draw line
+            targetCtx.beginPath()
+            targetCtx.moveTo(lineStartX, y);
+            targetCtx.lineTo(x, y);
+            targetCtx.strokeStyle = rgbaToString(lineColorRgba)
+            targetCtx.stroke()
+            // reset line.
+            lineStartX = x
+            lineColorRgba = null
+          }
+        }
       }
     }
     // Expand a 'line': start w/ beginning color, go until we hit a new color, then
@@ -70,6 +88,15 @@ class LineFiller {
 
 function rgbaToString(rgbaArray) {
   return `rgba(${rgbaArray.slice(0, 3).join(', ')}, ${rgbaArray[3] / 255})`;
+}
+
+function getRgbaDistance(rgba1, rgba2) {
+  let sum = 0
+  for (let i = 0; i < 4; i++) {
+    sum += Math.abs(rgba2[i] - rgba1[i])
+  }
+  const distance = sum / 4
+  return distance;
 }
 
 module.exports = LineFiller;
