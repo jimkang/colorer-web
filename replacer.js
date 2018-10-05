@@ -84,6 +84,7 @@ class Replacer {
       }
     }
 
+    // @TODO: use common util func, recently factored out.
     function replaceColors(rgbaToString, recolorMode) {
       var newForOld = {};
       var replacementsSet = {};
