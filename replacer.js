@@ -14,6 +14,7 @@ class Replacer {
     this.opacityPercentOverBase = routeOpts.opacityPercentOverBase;
     this.numberOfRetriesToAvoidSingleColor = +routeOpts.numberOfRetriesToAvoidSingleColor;
     this.minimumValueDifference = +routeOpts.minimumValueDifference;
+    this.maxLength = +routeOpts.maxLength;
   }
 
   start() {
@@ -37,11 +38,22 @@ class Replacer {
     ctx.filter = 'none';
     // Now we are in smallville.
     var imageData = ctx.getImageData(0, 0, smallWidth, smallHeight);
+    var scaleUp = originalWidth / smallWidth;
+    if (
+      scaleUp * smallWidth > this.maxLength ||
+      scaleUp * smallHeight > this.maxLength
+    ) {
+      let smallLength = smallWidth;
+      if (smallHeight > smallLength) {
+        smallLength = smallHeight;
+      }
+      scaleUp = this.maxLength / smallLength;
+    }
     this.recolor({
       srcDataArray: Array.from(imageData.data),
       smallWidth,
       smallHeight,
-      scale: originalWidth / smallWidth
+      scale: scaleUp
     });
   }
 
