@@ -65,8 +65,13 @@ class Replacer {
 
     if (this.showBase) {
       targetCtx.filter = 'saturate(0%)';
-      targetCtx.drawImage(this.img, 0, 0);
-
+      targetCtx.drawImage(
+        this.img,
+        0,
+        0,
+        targetCanvas.width,
+        targetCanvas.height
+      );
       targetCtx.filter = 'none';
       targetCtx.globalAlpha = this.opacityPercentOverBase / 100;
     }
