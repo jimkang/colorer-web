@@ -15,6 +15,8 @@ class Replacer {
     this.numberOfRetriesToAvoidSingleColor = +routeOpts.numberOfRetriesToAvoidSingleColor;
     this.minimumValueDifference = +routeOpts.minimumValueDifference;
     this.maxLength = +routeOpts.maxLength;
+    this.useWholeNumberScaleUpFactor =
+      routeOpts.useWholeNumberScaleUpFactor === 'yes';
   }
 
   start() {
@@ -49,6 +51,17 @@ class Replacer {
       }
       scaleUp = this.maxLength / smallLength;
     }
+    // The idea behind useWholeNumberScaleUpFactor is that in cases
+    // in which we scale back up by a non-whole number (e.g. 1.7), we
+    // do produce artifacts (circles) which are sometimes
+    // unwanted. So, with this param, we can avoid it if possible.
+    if (this.useWholeNumberScaleUpFactor) {
+      scaleUp = ~~scaleUp;
+      if (scaleUp < 1) {
+        scaleUp = 1;
+      }
+    }
+
     this.recolor({
       srcDataArray: Array.from(imageData.data),
       smallWidth,
@@ -85,7 +98,6 @@ class Replacer {
         this.rgbaToString.bind(this),
         this.recolorMode
       );
-      console.log('replacementColors', replacementColors);
       if (replacementColors.length > 1) {
         if (this.minimumValueDifference <= 0) {
           break;

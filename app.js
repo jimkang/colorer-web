@@ -14,7 +14,8 @@ var routeDefaults = {
   // The required minimum value between at least two of the colors.
   minimumValueDifference: 0,
   tolerance: 10, // for linefiller line breaks
-  maxLength: 2048
+  maxLength: 2048,
+  useWholeNumberScaleUpFactor: 'yes'
 };
 
 var routeState = RouteState({
