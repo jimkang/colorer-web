@@ -6,6 +6,7 @@ var routeDefaults = {
   srcImgUrl: 'data/fish.jpg',
   useCamera: 'no',
   cameraRefreshInterval: 1000,
+  videoSize: 640,
   displaySrcImage: 'yes',
   quant: 16,
   grayscale: 'yes',
@@ -60,19 +61,29 @@ function followRoute(routeOpts) {
     console.log('loadCameraFrame!');
     navigator.mediaDevices.getUserMedia({ video: true, audio: false })
       .then(function(stream) {
+        var runOpts = optsForEachRun[0];
         var videoEl = document.getElementById('camera-buffer');
-        videoEl.height = 800;
-        videoEl.width = 800;
+        videoEl.height = runOpts.videoSize;
+        videoEl.width = runOpts.videoSize;
         videoEl.srcObject = stream;
         videoEl.play();
-        var runOpts = optsForEachRun[0];
-        setInterval(() => {
+        function renderFromVideo () {
           renderRun(videoEl, runOpts, 0);
-        }, runOpts.cameraRefreshInterval);
+        }
+        if (runOpts.cameraRefreshInterval) {
+          setInterval(renderFromVideo, runOpts.cameraRefreshInterval);
+        } else {
+          doInAnimationFrame(renderFromVideo);
+        }
       })
       .catch(function(err) {
         console.log('An error occurred! ' + err);
       });
+  }
+
+  function doInAnimationFrame (renderFn) {
+    renderFn();
+    requestAnimationFrame(doInAnimationFrame);
   }
 
   function loadSourceImage() {
