@@ -5,6 +5,7 @@ var curry = require('lodash.curry');
 var routeDefaults = {
   srcImgUrl: 'data/fish.jpg',
   useCamera: 'no',
+  cameraRefreshInterval: 1000,
   displaySrcImage: 'yes',
   quant: 16,
   grayscale: 'yes',
@@ -64,9 +65,10 @@ function followRoute(routeOpts) {
         videoEl.width = 800;
         videoEl.srcObject = stream;
         videoEl.play();
-        setTimeout(() => {
-          renderRun(videoEl, optsForEachRun[0], 0);
-        }, 1000);
+        var runOpts = optsForEachRun[0];
+        setInterval(() => {
+          renderRun(videoEl, runOpts, 0);
+        }, runOpts.cameraRefreshInterval);
       })
       .catch(function(err) {
         console.log('An error occurred! ' + err);
@@ -87,9 +89,13 @@ function followRoute(routeOpts) {
   }
 
   function renderRun(srcImg, runOpts, i) {
-    var targetCanvas = document.createElement('canvas');
-    targetCanvas.setAttribute('id', 'target-canvas-' + i);
-    targetContainer.appendChild(targetCanvas);
+    var targetCanvasId = `target-canvas-${i}`;
+    var targetCanvas = document.getElementById(targetCanvasId);
+    if (!targetCanvas) {
+      targetCanvas = document.createElement('canvas');
+      targetCanvas.setAttribute('id', targetCanvasId);
+      targetContainer.appendChild(targetCanvas);
+    }
     var rendererOpts = Object.assign({}, runOpts, {
       img: srcImg,
       targetCanvas,
