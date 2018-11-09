@@ -1,8 +1,10 @@
 var handleError = require('handle-error-web');
 var RouteState = require('route-state');
+var curry = require('lodash.curry');
 
 var routeDefaults = {
   srcImgUrl: 'data/fish.jpg',
+  useCamera: 'no',
   displaySrcImage: 'yes',
   quant: 16,
   grayscale: 'yes',
@@ -46,7 +48,30 @@ function followRoute(routeOpts) {
     optsForEachRun = [opts];
   }
   hideOrShowSrcImage(opts.displaySrcImage === 'yes');
-  loadSourceImage();
+  if (opts.useCamera === 'yes') {
+    // one frame first. then timer after that.
+    loadCameraFrame();
+  } else {
+    loadSourceImage();
+  }
+
+  function loadCameraFrame() {
+    console.log('loadCameraFrame!');
+    navigator.mediaDevices.getUserMedia({ video: true, audio: false })
+      .then(function(stream) {
+        var videoEl = document.getElementById('camera-buffer');
+        videoEl.height = 800;
+        videoEl.width = 800;
+        videoEl.srcObject = stream;
+        videoEl.play();
+        setTimeout(() => {
+          renderRun(videoEl, optsForEachRun[0], 0);
+        }, 1000);
+      })
+      .catch(function(err) {
+        console.log('An error occurred! ' + err);
+      });
+  }
 
   function loadSourceImage() {
     var img = new Image();
@@ -57,21 +82,22 @@ function followRoute(routeOpts) {
 
   function useImage(e) {
     targetContainer.innerHTML = '';
-    optsForEachRun.forEach(renderRun);
+    var curriedRun = curry(renderRun)(e.currentTarget);
+    optsForEachRun.forEach(curriedRun);
+  }
 
-    function renderRun(runOpts, i) {
-      var targetCanvas = document.createElement('canvas');
-      targetCanvas.setAttribute('id', 'target-canvas-' + i);
-      targetContainer.appendChild(targetCanvas);
-      var rendererOpts = Object.assign({}, runOpts, {
-        img: e.currentTarget,
-        targetCanvas,
-        grayscale: runOpts.grayscale === 'yes',
-        showBase: runOpts.showBase === 'yes'
-      });
-      var theRenderer = new renderers[runOpts.renderer](rendererOpts);
-      theRenderer.start();
-    }
+  function renderRun(srcImg, runOpts, i) {
+    var targetCanvas = document.createElement('canvas');
+    targetCanvas.setAttribute('id', 'target-canvas-' + i);
+    targetContainer.appendChild(targetCanvas);
+    var rendererOpts = Object.assign({}, runOpts, {
+      img: srcImg,
+      targetCanvas,
+      grayscale: runOpts.grayscale === 'yes',
+      showBase: runOpts.showBase === 'yes'
+    });
+    var theRenderer = new renderers[runOpts.renderer](rendererOpts);
+    theRenderer.start();
   }
 }
 
