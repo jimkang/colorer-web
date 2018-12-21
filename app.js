@@ -19,7 +19,8 @@ var routeDefaults = {
   minimumValueDifference: 0,
   tolerance: 10, // for linefiller line breaks
   maxLength: 2048,
-  useWholeNumberScaleUpFactor: 'yes'
+  useWholeNumberScaleUpFactor: 'yes',
+  hideUi: 'no'
 };
 
 var routeState = RouteState({
@@ -41,7 +42,17 @@ var targetContainer = document.getElementById('target-canvases-container');
 
 function followRoute(routeOpts) {
   var opts = setDefaults(routeOpts);
-  var optsForEachRun;
+  // If we want to be truNinjaz, we would hide the ui if it already exists.
+  // But. 4latah.
+  if (opts.hideUi === 'yes') {
+    execute(opts);
+  } else {
+    setupUi(opts);
+  }
+}
+
+function execute (opts) {
+  let optsForEachRun;
   if (opts.runs) {
     // Example url that uses runs:
     // http://localhost:9966/#runs=[{"renderer"%3A "replacer"%2C "quant"%3A 16%2C "grayscale"%3A true%2C "recolorMode"%3A "random"}%2C{"renderer"%3A "replacer"%2C "quant"%3A 128%2C "grayscale"%3A true%2C "recolorMode"%3A "random"}]
@@ -129,4 +140,22 @@ function hideOrShowSrcImage(shouldShow) {
 
 function setDefaults(opts) {
   return Object.assign({}, routeDefaults, opts);
+}
+
+function setupUi(opts) {
+  // make file element if not exists, add listeners.
+  const inputId = 'upload-input';
+  let input = document.getElementById(inputId);
+  if (input) { return; }
+  input = document.createElement('input');
+  input.id = inputId;
+  input.type = 'file';
+  input.setAttribute('accept', 'image/*');
+  document.body.appendChild(input);
+  input.addEventListener('change', function() {
+    if (input.files.length < 1) { return; }
+    const file = input.files[0];
+    opts.srcImgUrl = URL.createObjectURL(file);
+    execute(opts);
+  });
 }
