@@ -47,11 +47,14 @@ function followRoute(routeOpts) {
   if (opts.hideUi === 'yes') {
     execute(opts);
   } else {
-    setupUi(opts);
+    setupUi();
+    if (opts.srcImgUrl) {
+      execute(opts);
+    }
   }
 }
 
-function execute (opts) {
+function execute(opts) {
   let optsForEachRun;
   if (opts.runs) {
     // Example url that uses runs:
@@ -70,7 +73,8 @@ function execute (opts) {
 
   function loadCameraFrame() {
     console.log('loadCameraFrame!');
-    navigator.mediaDevices.getUserMedia({ video: true, audio: false })
+    navigator.mediaDevices
+      .getUserMedia({ video: true, audio: false })
       .then(function(stream) {
         var runOpts = optsForEachRun[0];
         var videoEl = document.getElementById('camera-buffer');
@@ -78,7 +82,7 @@ function execute (opts) {
         videoEl.width = runOpts.videoSize;
         videoEl.srcObject = stream;
         videoEl.play();
-        function renderFromVideo () {
+        function renderFromVideo() {
           renderRun(videoEl, runOpts, 0);
         }
         if (runOpts.cameraRefreshInterval) {
@@ -92,7 +96,7 @@ function execute (opts) {
       });
   }
 
-  function doInAnimationFrame (renderFn) {
+  function doInAnimationFrame(renderFn) {
     renderFn();
     requestAnimationFrame(doInAnimationFrame);
   }
@@ -142,20 +146,57 @@ function setDefaults(opts) {
   return Object.assign({}, routeDefaults, opts);
 }
 
-function setupUi(opts) {
+function setupUi() {
+  setupFileUpload();
+  setupRerunButton();
+}
+
+function setupFileUpload() {
   // make file element if not exists, add listeners.
-  const inputId = 'upload-input';
-  let input = document.getElementById(inputId);
-  if (input) { return; }
-  input = document.createElement('input');
-  input.id = inputId;
+  let { input, created } = createIfNeeded({ id: 'upload-input', tag: 'input' });
+  if (!created) {
+    return;
+  }
+
   input.type = 'file';
   input.setAttribute('accept', 'image/*');
   document.body.appendChild(input);
-  input.addEventListener('change', function() {
-    if (input.files.length < 1) { return; }
+  input.addEventListener('change', onFileChange);
+
+  function onFileChange() {
+    if (input.files.length < 1) {
+      return;
+    }
     const file = input.files[0];
-    opts.srcImgUrl = URL.createObjectURL(file);
-    execute(opts);
+    routeState.addToRoute({ srcImgUrl: URL.createObjectURL(file) });
+  }
+}
+
+function setupRerunButton() {
+  let { button, created } = createIfNeeded({
+    id: 'rerun-button',
+    tag: 'button'
   });
+  if (!created) {
+    return;
+  }
+
+  button.textContent = 'Run it again!';
+  button.addEventListener('click', onRunClick);
+  document.body.appendChild(button);
+}
+
+function onRunClick() {
+  routeState.routeFromHash();
+}
+
+function createIfNeeded({ id, tag }) {
+  let element = document.getElementById(id);
+  let created = false;
+  if (!element) {
+    created = true;
+    element = document.createElement(tag);
+    element.id = id;
+  }
+  return { [tag]: element, created };
 }
