@@ -68,7 +68,9 @@ function execute(opts) {
   if (opts.runs) {
     // Example url that uses runs:
     // http://localhost:9966/#runs=[{"renderer"%3A "replacer"%2C "quant"%3A 16%2C "grayscale"%3A true%2C "recolorMode"%3A "random"}%2C{"renderer"%3A "replacer"%2C "quant"%3A 128%2C "grayscale"%3A true%2C "recolorMode"%3A "random"}]
-    optsForEachRun = JSON.parse(decodeURIComponent(opts.runs)).map(setDefaults);
+    optsForEachRun = JSON.parse(decodeURIComponent(opts.runs))
+      .map(setDefaults)
+      .map(setInferredOptsForEachRun);
   } else {
     optsForEachRun = [opts];
   }
@@ -78,6 +80,11 @@ function execute(opts) {
     loadCameraFrame();
   } else {
     loadSourceImage();
+  }
+
+  function setInferredOptsForEachRun(runOpts) {
+    // Probable needs to be available to each run.
+    return Object.assign({}, runOpts, { probable: opts.probable });
   }
 
   function loadCameraFrame() {
