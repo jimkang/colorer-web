@@ -1,6 +1,8 @@
 var handleError = require('handle-error-web');
 var RouteState = require('route-state');
 var curry = require('lodash.curry');
+var Probable = require('probable').createProbable;
+var seedrandom = require('seedrandom');
 
 var routeDefaults = {
   srcImgUrl: 'data/fish.jpg',
@@ -41,6 +43,11 @@ var targetContainer = document.getElementById('target-canvases-container');
 })();
 
 function followRoute(routeOpts) {
+  if (!routeOpts.seed) {
+    routeState.addToRoute({ seed: new Date().toISOString() });
+    return;
+  }
+
   var opts = setDefaults(routeOpts);
   // If we want to be truNinjaz, we would hide the ui if it already exists.
   // But. 4latah.
@@ -55,6 +62,8 @@ function followRoute(routeOpts) {
 }
 
 function execute(opts) {
+  var random = seedrandom(opts.seed);
+  opts.probable = Probable({ random });
   let optsForEachRun;
   if (opts.runs) {
     // Example url that uses runs:
@@ -187,7 +196,7 @@ function setupRerunButton() {
 }
 
 function onRunClick() {
-  routeState.routeFromHash();
+  routeState.addToRoute({ seed: new Date().toISOString() });
 }
 
 function createIfNeeded({ id, tag }) {

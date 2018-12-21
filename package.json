@@ -32,6 +32,7 @@
     "probable": "^2.1.2",
     "qs": "^6.5.2",
     "route-state": "^1.2.0",
+    "seedrandom": "^2.4.4",
     "standard-bail": "^2.0.1"
   }
 }

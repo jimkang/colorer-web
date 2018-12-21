@@ -1,4 +1,3 @@
-var probable = require('probable');
 var hsl = require('d3-color').hsl;
 
 var originalWidth;
@@ -17,6 +16,7 @@ class Replacer {
     this.maxLength = +routeOpts.maxLength;
     this.useWholeNumberScaleUpFactor =
       routeOpts.useWholeNumberScaleUpFactor === 'yes';
+    this.probable = routeOpts.probable;
   }
 
   start() {
@@ -94,10 +94,11 @@ class Replacer {
       attempts < this.numberOfRetriesToAvoidSingleColor;
       ++attempts
     ) {
-      var replacementColors = replaceColors(
-        this.rgbaToString.bind(this),
-        this.recolorMode
-      );
+      var replacementColors = replaceColors({
+        rgbaToString: this.rgbaToString.bind(this),
+        recolorMode: this.recolorMode,
+        probable: this.probable
+      });
       if (replacementColors.length > 1) {
         if (this.minimumValueDifference <= 0) {
           break;
@@ -114,7 +115,7 @@ class Replacer {
     }
 
     // @TODO: use common util func, recently factored out.
-    function replaceColors(rgbaToString, recolorMode) {
+    function replaceColors({ rgbaToString, recolorMode, probable }) {
       var newForOld = {};
       var replacementsSet = {};
 
