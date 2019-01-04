@@ -3,6 +3,7 @@ var RouteState = require('route-state');
 var curry = require('lodash.curry');
 var Probable = require('probable').createProbable;
 var seedrandom = require('seedrandom');
+var downloadFromTargetCanvas = require('./download-from-target-canvas');
 
 var routeDefaults = {
   srcImgUrl: 'data/fish.jpg',
@@ -164,7 +165,16 @@ function setDefaults(opts) {
 
 function setupUi() {
   setupFileUpload();
-  setupRerunButton();
+  setupButton({
+    id: 'rerun-button',
+    text: 'Run it again!',
+    onClick: onRunClick
+  });
+  setupButton({
+    id: 'download-button',
+    text: 'Download the (first) generated image',
+    onClick: downloadFromTargetCanvas
+  });
 }
 
 function setupFileUpload() {
@@ -188,22 +198,19 @@ function setupFileUpload() {
   }
 }
 
-function setupRerunButton() {
-  let { button, created } = createIfNeeded({
-    id: 'rerun-button',
-    tag: 'button'
-  });
+function onRunClick() {
+  routeState.addToRoute({ seed: new Date().toISOString() });
+}
+
+function setupButton({ id, text, onClick }) {
+  let { button, created } = createIfNeeded({ id, tag: 'button' });
   if (!created) {
     return;
   }
 
-  button.textContent = 'Run it again!';
-  button.addEventListener('click', onRunClick);
+  button.textContent = text;
+  button.addEventListener('click', onClick);
   document.body.appendChild(button);
-}
-
-function onRunClick() {
-  routeState.addToRoute({ seed: new Date().toISOString() });
 }
 
 function createIfNeeded({ id, tag }) {
