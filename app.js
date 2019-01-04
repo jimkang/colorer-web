@@ -32,7 +32,8 @@ var routeState = RouteState({
 
 var renderers = {
   replacer: require('./replacer'),
-  linefiller: require('./linefiller')
+  linefiller: require('./linefiller'),
+  igniter: require('./igniter')
 };
 
 var targetContainer = document.getElementById('target-canvases-container');
