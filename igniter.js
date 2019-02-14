@@ -12,11 +12,11 @@ class Igniter {
     // Draw srcCanvas, get imgData.
     this.imgData = this.initCanvases(); // names :(
     // Init stuff before animation.
-    this.currentSrcRow = 0; // names :)
     // do request animation frame here.
-    for (var i = 0; i < this.imgData.height; ++i) {
-      this.drawFrame();
-    }
+
+    requestAnimationFrame(this.boundDrawFrame);
+    //  this.drawFrame();
+    //}
     //requestAnimationFrame(this.boundDrawFrame);
   }
 
@@ -36,17 +36,14 @@ class Igniter {
   }
 
   drawFrame() {
-    if (this.currentSrcRow >= this.imgData.height) {
-      console.log(this.currentSrcRow, this.imgData.height);
-      return;
-    }
-
-    // get current line of srcImage.
-    for (let x = 0; x < this.imgData.width; x++) {
-      const pixelIndex = (this.imgData.width * this.currentSrcRow + x) * 4;
-      for (let rgbaIndex = 0; rgbaIndex < 4; ++rgbaIndex) {
-        const i = pixelIndex + rgbaIndex;
-        this.outputBuffer[i] = this.imgData.data[i];
+    for (var row = 0; row < this.imgData.height; ++row) {
+      // get current line of srcImage.
+      for (let x = 0; x < this.imgData.width; x++) {
+        const pixelIndex = (this.imgData.width * row + x) * 4;
+        for (let rgbaIndex = 0; rgbaIndex < 4; ++rgbaIndex) {
+          const i = pixelIndex + rgbaIndex;
+          this.outputBuffer[i] = this.imgData.data[i];
+        }
       }
     }
 
@@ -55,9 +52,6 @@ class Igniter {
       0,
       0
     );
-    this.currentSrcRow += 1;
-
-    //requestAnimationFrame(this.boundDrawFrame);
     //setTimeout(this.boundDrawFrame, 0);
   }
 }
