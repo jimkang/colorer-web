@@ -5,6 +5,8 @@ var Probable = require('probable').createProbable;
 var seedrandom = require('seedrandom');
 var downloadFromTargetCanvas = require('./download-from-target-canvas');
 
+var rendererInstance;
+
 var routeDefaults = {
   srcImgUrl: 'data/fish.jpg',
   useCamera: 'no',
@@ -23,7 +25,10 @@ var routeDefaults = {
   tolerance: 10, // for linefiller line breaks
   maxLength: 2048,
   useWholeNumberScaleUpFactor: 'yes',
-  hideUi: 'no'
+  hideUi: 'no',
+  swapColorPerFrame: 'no',
+  swapColorPerPixel: 'no',
+  swapColorPerAlternateRow: 'no'
 };
 
 var routeState = RouteState({
@@ -146,8 +151,11 @@ function execute(opts) {
       grayscale: runOpts.grayscale === 'yes',
       showBase: runOpts.showBase === 'yes'
     });
-    var theRenderer = new renderers[runOpts.renderer](rendererOpts);
-    theRenderer.start();
+    if (rendererInstance && rendererInstance.destroy) {
+      rendererInstance.destroy();
+    }
+    rendererInstance = new renderers[runOpts.renderer](rendererOpts);
+    rendererInstance.start();
   }
 }
 

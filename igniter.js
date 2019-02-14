@@ -1,3 +1,5 @@
+var probable = require('probable');
+
 class Igniter {
   constructor(routeOpts) {
     this.img = routeOpts.img;
@@ -7,18 +9,26 @@ class Igniter {
     this.opacityPercentOverBase = routeOpts.opacityPercentOverBase;
     this.boundDrawFrame = this.drawFrame.bind(this);
     this.frameCount = 0;
+    this.swapColorPerFrame = routeOpts.swapColorPerFrame === 'yes';
+    this.swapColorPerPixel = routeOpts.swapColorPerPixel === 'yes';
+    this.swapColorPerAlternateRow =
+      routeOpts.swapColorPerAlternateRow === 'yes';
+    this.lastAnimationRequestId;
+    this.shuffleSwappedColors();
+  }
+
+  destroy() {
+    if (this.lastAnimationRequestId) {
+      window.cancelAnimationFrame(this.lastAnimationRequestId);
+    }
   }
 
   start() {
     // Draw srcCanvas, get imgData.
     this.imgData = this.initCanvases(); // names :(
     // Init stuff before animation.
-    // do request animation frame here.
 
-    requestAnimationFrame(this.boundDrawFrame);
-    //  this.drawFrame();
-    //}
-    //requestAnimationFrame(this.boundDrawFrame);
+    this.lastAnimationRequestId = requestAnimationFrame(this.boundDrawFrame);
   }
 
   initCanvases() {
@@ -37,6 +47,9 @@ class Igniter {
   }
 
   drawFrame() {
+    if (this.swapColorPerFrame) {
+      this.shuffleSwappedColors();
+    }
     for (var row = 0; row < this.imgData.height; ++row) {
       // get current line of srcImage.
       for (let x = 0; x < this.imgData.width; x++) {
@@ -45,14 +58,29 @@ class Igniter {
           (srcPixelIndex + this.frameCount) %
           (this.imgData.width * this.imgData.height);
         if (row % 2 === 0) {
+          if (this.swapColorPerPixelAlternateRow) {
+            this.shuffleSwappedColors();
+          }
           destPixelIndex =
             (srcPixelIndex - this.frameCount) %
             (this.imgData.width * this.imgData.height);
         }
+        if (this.swapColorPerPixel) {
+          this.shuffleSwappedColors();
+        }
         for (let rgbaIndex = 0; rgbaIndex < 4; ++rgbaIndex) {
-          const i = srcPixelIndex * 4 + rgbaIndex;
-          this.outputBuffer[destPixelIndex * 4 + rgbaIndex] = this.imgData.data[
-            i
+          const srcBufferIndex = srcPixelIndex * 4 + rgbaIndex;
+          let outputBufferIndex = destPixelIndex * 4 + rgbaIndex;
+
+          if (row % 2 === 0) {
+            if (rgbaIndex === this.swapColorIndex1) {
+              outputBufferIndex = destPixelIndex * 4 + this.swapColorIndex2;
+            } else if (rgbaIndex === this.swapColorIndex2) {
+              outputBufferIndex = destPixelIndex * 4 + this.swapColorIndex2;
+            }
+          }
+          this.outputBuffer[outputBufferIndex] = this.imgData.data[
+            srcBufferIndex
           ];
         }
       }
@@ -64,7 +92,12 @@ class Igniter {
       0
     );
     this.frameCount++;
-    requestAnimationFrame(this.boundDrawFrame);
+    this.lastAnimationRequestId = requestAnimationFrame(this.boundDrawFrame);
+  }
+
+  shuffleSwappedColors() {
+    this.swapColorIndex1 = probable.roll(3);
+    this.swapColorIndex2 = probable.roll(3);
   }
 }
 
