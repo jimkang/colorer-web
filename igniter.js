@@ -41,9 +41,14 @@ class Igniter {
       // get current line of srcImage.
       for (let x = 0; x < this.imgData.width; x++) {
         const srcPixelIndex = this.imgData.width * row + x;
-        const destPixelIndex =
+        let destPixelIndex =
           (srcPixelIndex + this.frameCount) %
           (this.imgData.width * this.imgData.height);
+        if (row % 2 === 0) {
+          destPixelIndex =
+            (srcPixelIndex - this.frameCount) %
+            (this.imgData.width * this.imgData.height);
+        }
         for (let rgbaIndex = 0; rgbaIndex < 4; ++rgbaIndex) {
           const i = srcPixelIndex * 4 + rgbaIndex;
           this.outputBuffer[destPixelIndex * 4 + rgbaIndex] = this.imgData.data[
