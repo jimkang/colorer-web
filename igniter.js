@@ -6,6 +6,7 @@ class Igniter {
     this.showBase = routeOpts.showBase;
     this.opacityPercentOverBase = routeOpts.opacityPercentOverBase;
     this.boundDrawFrame = this.drawFrame.bind(this);
+    this.frameCount = 0;
   }
 
   start() {
@@ -39,10 +40,15 @@ class Igniter {
     for (var row = 0; row < this.imgData.height; ++row) {
       // get current line of srcImage.
       for (let x = 0; x < this.imgData.width; x++) {
-        const pixelIndex = (this.imgData.width * row + x) * 4;
+        const srcPixelIndex = this.imgData.width * row + x;
+        const destPixelIndex =
+          (srcPixelIndex + this.frameCount) %
+          (this.imgData.width * this.imgData.height);
         for (let rgbaIndex = 0; rgbaIndex < 4; ++rgbaIndex) {
-          const i = pixelIndex + rgbaIndex;
-          this.outputBuffer[i] = this.imgData.data[i];
+          const i = srcPixelIndex * 4 + rgbaIndex;
+          this.outputBuffer[destPixelIndex * 4 + rgbaIndex] = this.imgData.data[
+            i
+          ];
         }
       }
     }
@@ -52,7 +58,8 @@ class Igniter {
       0,
       0
     );
-    //setTimeout(this.boundDrawFrame, 0);
+    this.frameCount++;
+    requestAnimationFrame(this.boundDrawFrame);
   }
 }
 
