@@ -4,6 +4,13 @@ var curry = require('lodash.curry');
 var Probable = require('probable').createProbable;
 var seedrandom = require('seedrandom');
 var downloadFromTargetCanvas = require('./download-from-target-canvas');
+var randomInternetArchive = require('random-internet-archive');
+var request = require('basic-browser-request');
+var tableDef = require('good-ia-source-image-probable-def');
+var sb = require('standard-bail')();
+
+var unseededProbable = Probable();
+var kitTable = unseededProbable.createTableFromSizes(tableDef);
 
 var rendererInstance;
 
@@ -184,6 +191,11 @@ function setupUi() {
     text: 'Download the (first) generated image',
     onClick: downloadFromTargetCanvas
   });
+  setupButton({
+    id: 'random-image-button',
+    text: 'Get a random source image from the Internet Archive',
+    onClick: getRandomImage
+  });
 }
 
 function setupFileUpload() {
@@ -231,4 +243,35 @@ function createIfNeeded({ id, tag }) {
     element.id = id;
   }
   return { [tag]: element, created };
+}
+
+function getRandomImage() {
+  var kit = kitTable.roll();
+  randomInternetArchive(
+    {
+      request,
+      proxyBaseURL: 'https://jimkang.com/internet-archive',
+      collection: kit.collection,
+      query: kit.query,
+      mediatype: 'image',
+      fileExtensions: ['jpg', 'jpeg', 'png'],
+      minimumSize: 100000,
+      maximumSize: 5000000
+    },
+    sb(addImageToRoute, handleError)
+  );
+
+  function addImageToRoute({ url, collection, title, detailsURL }) {
+    console.log(
+      'Image URL:',
+      url,
+      'Collection:',
+      collection,
+      'Title:',
+      title,
+      'details:',
+      detailsURL
+    );
+    routeState.addToRoute({ srcImgUrl: url });
+  }
 }
